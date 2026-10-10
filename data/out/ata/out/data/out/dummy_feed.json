@@ -1,0 +1,26 @@
+{
+  "status": "success",
+  "count": 2,
+  "data": [
+    {
+      "ID_Klaim": "K-00001",
+      "NIK_Hash": "8f4a9b2c1d3e",
+      "Status_Aktif": "Aktif",
+      "Timestamp": "2026-10-08 08:00:00",
+      "Kode_Faskes": "F-ACEH",
+      "risk_score": 92.5,
+      "risk_category": "Risiko Tinggi (Merah)",
+      "xai_reason": "Anomali Waktu: Perpindahan 1800km dalam 2.0 jam | Indikasi Sindikat: No. HP terdaftar di 20 NIK berbeda."
+    },
+    {
+      "ID_Klaim": "K-00002",
+      "NIK_Hash": "c29b4e5f6g7h",
+      "Status_Aktif": "Non-Aktif",
+      "Timestamp": "2026-10-08 09:30:00",
+      "Kode_Faskes": "F-BDG",
+      "risk_score": 50.0,
+      "risk_category": "Review Ringan (Kuning)",
+      "xai_reason": "Status kartu JKN Non-Aktif."
+    }
+  ]
+}

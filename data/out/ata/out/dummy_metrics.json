@@ -1,0 +1,8 @@
+{
+  "accuracy": 99.5,
+  "recall": 99.4,
+  "f1_score": 0.961,
+  "fpr": 0.52,
+  "total_claims_processed": 10000,
+  "flagged_claims": 520
+}
