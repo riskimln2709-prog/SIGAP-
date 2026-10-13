@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="id"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SIGAP – Periksa Klaim Baru</title>
+<style>
+:root{--bg:#f5f5fb;--card:#fff;--ink:#1d1b3a;--mute:#6b6a85;--line:#e1e0ee;--brand:#3b3bcb}
+@media (prefers-color-scheme:dark){:root{--bg:#12112a;--card:#1b1a38;--ink:#ecebff;--mute:#a09fc4;--line:#2d2c52;--brand:#8c8cff}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,sans-serif}
+.wrap{max-width:560px;margin:0 auto;padding:24px 16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:14px}
+h1{font-size:22px;margin:0 0 4px}label{display:block;font-size:13px;color:var(--mute);margin:12px 0 4px}
+input,select{width:100%;font:inherit;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+button{width:100%;margin-top:18px;font:inherit;font-weight:600;padding:11px;border:0;border-radius:8px;background:var(--brand);color:#fff;cursor:pointer}
+button:disabled{opacity:.6}a{color:var(--brand)}
+.res{border-left:4px solid var(--brand)}.err{border-left:4px solid #c2272d;color:#c2272d}
+.big{font-size:28px;font-weight:700}
+</style></head><body><div class="wrap">
+<div class="card"><h1>Periksa klaim baru</h1>
+<div style="color:var(--mute)">NIK di-hash di server dan tidak disimpan. <a href="/">Kembali ke antrean</a></div>
+<form id="f">
+<label>NIK (16 digit)</label><input id="nik" inputmode="numeric" maxlength="16" required>
+<label>No. HP terdaftar</label><input id="hp" inputmode="numeric" placeholder="081234567890" required>
+<label>No. kartu BPJS</label><input id="kartu" required>
+<label>Status kepesertaan</label><select id="st"><option>Aktif</option><option>Non-Aktif</option></select>
+<label>Faskes</label><select id="fk" required></select>
+<label>Diagnosis (ICD-10)</label><input id="icd" placeholder="mis. I10" required>
+<label>Waktu klaim</label><input id="ts" type="datetime-local" required>
+<button id="btn">Periksa klaim</button></form></div>
+<div id="out"></div></div>
+<script>
+const API=location.protocol.startsWith("http")?"":"http://127.0.0.1:8000";
+const $=id=>document.getElementById(id);
+const now=new Date();now.setMinutes(now.getMinutes()-now.getTimezoneOffset());$("ts").value=now.toISOString().slice(0,16);
+fetch(API+"/api/v1/faskes").then(r=>r.json()).then(l=>$("fk").innerHTML=l.map(x=>`<option>${x.Kode_Faskes}</option>`).join(""))
+ .catch(()=>$("out").innerHTML='<div class="card err">Server tidak terhubung. Jalankan uvicorn lalu muat ulang.</div>');
+$("f").onsubmit=async e=>{e.preventDefault();$("btn").disabled=true;$("btn").textContent="Memproses…";
+ try{const r=await fetch(API+"/api/v1/claims",{method:"POST",headers:{"Content-Type":"application/json"},
+  body:JSON.stringify({nik:$("nik").value,no_hp:$("hp").value,no_kartu:$("kartu").value,status_aktif:$("st").value,
+   kode_faskes:$("fk").value,icd10:$("icd").value,timestamp:$("ts").value})});
+  const j=await r.json();
+  if(!r.ok)throw new Error(typeof j.detail==="string"?j.detail:"Isian belum benar, periksa lagi.");
+  const c=j.claim;$("out").innerHTML=`<div class="card res"><div class="big">${c.risk_score}/100 • ${c.risk_category}</div>
+   <p>${c.xai_reason}</p><div style="color:var(--mute)">ID klaim ${c.ID_Klaim}. ${j.in_queue?"Masuk antrean verifikator.":"Tidak masuk antrean (risiko rendah)."}</div>
+   <p><a href="/">Lihat di antrean</a></p></div>`;$("nik").value="";
+ }catch(err){$("out").innerHTML=`<div class="card err">${err.message}</div>`}
+ $("btn").disabled=false;$("btn").textContent="Periksa klaim"};
+</script></body></html>
